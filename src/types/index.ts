@@ -1,10 +1,9 @@
 export interface Participant {
   id: string;
-  fullName: string;
   dni: string;
-  email: string;
   phone: string;
   placa: string;
+  sede?: string;
   champion?: string;
   subchampion?: string;
   thirdPlace?: string;

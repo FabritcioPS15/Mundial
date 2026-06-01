@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Hero from './Hero';
 import WorldCupBracket from './WorldCupBracket';
 import RecentParticipants from './RecentParticipants';
+import PublicStats from './PublicStats';
 
 export default function PublicPage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -32,6 +33,7 @@ export default function PublicPage() {
         <div ref={fixtureRef}>
           <WorldCupBracket />
         </div>
+        <PublicStats />
         <div ref={recentRef}>
           <RecentParticipants />
         </div>

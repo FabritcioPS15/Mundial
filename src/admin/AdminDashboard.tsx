@@ -5,6 +5,7 @@ import ParticipantsTable from './ParticipantsTable';
 import DrawSection from './DrawSection';
 import ReportsSection from './ReportsSection';
 import BracketSection from './BracketSection';
+import PredictionStats from './PredictionStats';
 
 type Tab = 'dashboard' | 'participants' | 'bracket' | 'draw' | 'reports';
 
@@ -129,6 +130,9 @@ export default function AdminDashboard({ onLogout }: Props) {
                 ))}
               </div>
 
+              {/* Prediction Stats */}
+              <PredictionStats participants={participants} />
+
               {/* Recent */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-white font-bold mb-4 flex items-center gap-2">
@@ -141,16 +145,22 @@ export default function AdminDashboard({ onLogout }: Props) {
                     {recent.map((p) => (
                       <div key={p.id} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
                         <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center shrink-0">
-                          <span className="text-gold text-xs font-black">{p.fullName.charAt(0)}</span>
+                          <span className="text-gold text-xs font-black">{p.placa?.charAt(0) || p.dni.charAt(0)}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-white text-sm font-medium truncate">{p.fullName}</p>
+                            <p className="text-white text-sm font-medium truncate">{p.dni}</p>
                             <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-1.5 py-0.5 rounded font-mono font-bold text-[9px] uppercase">
                               {p.placa || 'N/A'}
                             </span>
                           </div>
-                          <p className="text-gray-600 text-xs">{p.email}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-gray-600 text-xs">{p.phone}</p>
+                            {p.sede && <span className="text-gray-500 text-[10px]">• {p.sede}</span>}
+                          </div>
+                          {p.ticketCode && (
+                            <p className="text-blue-400 text-[10px] font-mono">{p.ticketCode}</p>
+                          )}
                         </div>
                         <span className="text-gray-600 text-xs">
                           {new Date(p.registeredAt).toLocaleDateString('es-ES')}

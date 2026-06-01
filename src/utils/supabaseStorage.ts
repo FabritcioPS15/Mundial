@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
-import type { Participant, Winner, Prediction, BracketData } from '../types';
+import type { Participant, Winner, BracketData } from '../types';
+import { generateTicketCode } from './excelImport';
 
 // ---------- Participants ----------
 export async function fetchParticipants(): Promise<Participant[]> {
@@ -28,11 +29,10 @@ export async function fetchParticipants(): Promise<Participant[]> {
     const pred = predMap.get(p.id);
     return {
       id: p.id,
-      fullName: p.full_name,
       dni: p.dni,
-      email: p.email,
       phone: p.phone,
       placa: p.placa,
+      sede: p.sede,
       registeredAt: p.registered_at,
       ticketCode: p.ticket_code,
       champion: pred?.champion ?? undefined,
@@ -43,19 +43,17 @@ export async function fetchParticipants(): Promise<Participant[]> {
 }
 
 export async function insertParticipant(p: {
-  fullName: string;
   dni: string;
-  email: string;
   phone: string;
   placa: string;
+  sede?: string;
   ticketCode?: string;
 }): Promise<void> {
   const { error } = await supabase.from('participants').insert({
-    full_name: p.fullName,
     dni: p.dni,
-    email: p.email,
     phone: p.phone,
     placa: p.placa,
+    sede: p.sede,
     ticket_code: p.ticketCode,
   });
   if (error) throw error;
@@ -69,6 +67,74 @@ export async function deleteParticipant(id: string): Promise<void> {
   // Then delete the participant
   const { error: partError } = await supabase.from('participants').delete().eq('id', id);
   if (partError) throw partError;
+}
+
+export async function importParticipantsFromExcel(
+  data: Array<{
+    DNI: string;
+    Telefono: string;
+    Placa: string;
+    Sede?: string;
+    Campeon?: string;
+    Subcampeon?: string;
+    TercerPuesto?: string;
+  }>
+): Promise<{ success: number; errors: string[] }> {
+  const errors: string[] = [];
+  let successCount = 0;
+
+  // Check for existing DNIs
+  const existing = await fetchParticipants();
+  const existingDnis = new Set(existing.map(p => p.dni.toLowerCase()));
+
+  for (const row of data) {
+    try {
+      // Check for duplicate DNI
+      if (existingDnis.has(row.DNI.toLowerCase())) {
+        errors.push(`DNI ${row.DNI} ya existe`);
+        continue;
+      }
+
+      const ticketCode = generateTicketCode();
+
+      // Insert participant
+      const { error: partError } = await supabase.from('participants').insert({
+        dni: row.DNI,
+        phone: row.Telefono,
+        placa: row.Placa,
+        sede: row.Sede || null,
+        ticket_code: ticketCode,
+      }).select('id').single();
+
+      if (partError) throw partError;
+
+      const participantId = (partError as any)?.data?.id;
+      if (!participantId) {
+        errors.push(`No se pudo obtener ID para DNI ${row.DNI}`);
+        continue;
+      }
+
+      // Insert predictions if provided
+      if (row.Campeon || row.Subcampeon || row.TercerPuesto) {
+        const { error: predError } = await supabase.from('predictions').insert({
+          participant_id: participantId,
+          champion: row.Campeon || '',
+          subchampion: row.Subcampeon || '',
+          third_place: row.TercerPuesto || '',
+        });
+
+        if (predError) {
+          console.warn('Error inserting prediction:', predError);
+        }
+      }
+
+      successCount++;
+    } catch (error: any) {
+      errors.push(`Error con DNI ${row.DNI}: ${error.message}`);
+    }
+  }
+
+  return { success: successCount, errors };
 }
 
 // ---------- Predictions ----------
@@ -102,9 +168,7 @@ export async function fetchWinners(): Promise<Winner[]> {
   return (data as any[]).map((row) => ({
     participant: {
       id: row.participant.id,
-      fullName: row.participant.full_name,
       dni: row.participant.dni,
-      email: row.participant.email,
       phone: row.participant.phone,
       placa: row.participant.placa,
       registeredAt: row.participant.registered_at,

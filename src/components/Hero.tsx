@@ -6,14 +6,14 @@ interface HeroProps {
 
 export default function Hero({ formRef }: HeroProps) {
   return (
-    <section 
-      id="hero-section" 
+    <section
+      id="hero-section"
       className="relative min-h-screen flex items-center justify-center py-24 md:py-28 px-4 md:px-8 overflow-hidden bg-[#08090d]"
     >
       {/* Stadium Player Background Overlay with enhanced contrast */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.55] pointer-events-none z-0 scale-105 transition-all duration-1000 ease-out"
-        style={{ backgroundImage: "url('/stadium_bg.png')" }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.35] pointer-events-none z-0 scale-105 transition-all duration-1000 ease-out"
+        style={{ backgroundImage: "url('/Fondo.png')" }}
       />
 
       {/* Dark Vignette overlays to add depth and center focus */}
@@ -21,7 +21,7 @@ export default function Hero({ formRef }: HeroProps) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.1)_0%,transparent_75%)] pointer-events-none z-0" />
 
       {/* Smooth fade-to-white transition at the bottom of the hero to blend with the Bracket section */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10" />
+      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/20 to-transparent pointer-events-none z-10" />
 
       {/* Main Grid Content */}
       <div className="relative z-20 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-6">

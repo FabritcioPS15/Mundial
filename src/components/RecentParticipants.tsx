@@ -36,22 +36,20 @@ export default function RecentParticipants() {
                 {/* Clean Light Avatar Circle */}
                 <div className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-200/60 flex items-center justify-center shrink-0">
                   <span className="text-zinc-800 font-black text-xs select-none">
-                    {p.fullName.charAt(0).toUpperCase()}
+                    👤
                   </span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-zinc-800 font-bold truncate text-sm">{p.fullName}</p>
+                    <p className="text-zinc-800 font-bold truncate text-sm">Participante</p>
                     {p.placa && (
                       <span className="bg-orange-500/10 text-orange-600 border border-orange-500/20 px-1.5 py-0.5 rounded font-mono font-bold text-[9px] uppercase tracking-wider">
                         🚗 {p.placa.replace(/(.{3}).+(.{1})/, '$1-**$2')}
                       </span>
                     )}
                   </div>
-                  <p className="text-zinc-400 text-[11px] truncate mt-0.5">
-                    {p.email.replace(/(.{3}).+(@.+)/, '$1***$2')}
-                  </p>
+
 
                   {/* Predicciones con banderas */}
                   <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px] text-zinc-600 font-bold select-none">

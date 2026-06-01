@@ -1,27 +1,34 @@
 import { useState } from 'react';
-import { Search, Trash2, Users, Download } from 'lucide-react';
+import { Search, Trash2, Users, Download, Upload } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { exportToExcel } from '../utils/storage';
 import { getTeamFlagUrl } from '../utils/flagHelper';
+import { readExcelFile } from '../utils/excelImport';
 import type { Participant } from '../types';
 
 export default function ParticipantsTable() {
-  const { participants, removeParticipant, showToast } = useApp();
+  const { participants, removeParticipant, showToast, importParticipants } = useApp();
   const [query, setQuery] = useState('');
+  const [selectedSede, setSelectedSede] = useState<string>('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  // Get unique sedes
+  const sedes = Array.from(new Set(participants.map(p => p.sede).filter(Boolean))).sort();
 
   const filtered = participants.filter((p) => {
     const q = query.toLowerCase();
-    return (
-      p.fullName.toLowerCase().includes(q) ||
+    const matchesQuery =
       p.dni.toLowerCase().includes(q) ||
-      p.email.toLowerCase().includes(q) ||
       p.phone.includes(q) ||
       (p.placa && p.placa.toLowerCase().includes(q)) ||
       (p.champion && p.champion.toLowerCase().includes(q)) ||
       (p.subchampion && p.subchampion.toLowerCase().includes(q)) ||
-      (p.thirdPlace && p.thirdPlace.toLowerCase().includes(q))
-    );
+      (p.thirdPlace && p.thirdPlace.toLowerCase().includes(q));
+    
+    const matchesSede = !selectedSede || p.sede === selectedSede;
+    
+    return matchesQuery && matchesSede;
   });
 
   const handleDelete = async (id: string) => {
@@ -32,11 +39,11 @@ export default function ParticipantsTable() {
 
   const handleExport = async () => {
     const data: Record<string, string | number>[] = participants.map((p) => ({
-      Nombre: p.fullName,
       DNI: p.dni,
-      Email: p.email,
       Telefono: p.phone,
       Placa: p.placa || '',
+      Sede: p.sede || '',
+      Ticket: p.ticketCode || '',
       Campeon: p.champion || '',
       Subcampeon: p.subchampion || '',
       TercerPuesto: p.thirdPlace || '',
@@ -52,27 +59,87 @@ export default function ParticipantsTable() {
     }
   };
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const data = await readExcelFile(file);
+      const result = await importParticipants(data);
+      
+      if (result.success > 0) {
+        showToast(`${result.success} participantes importados correctamente`, 'success');
+      }
+      if (result.errors.length > 0) {
+        console.error('Import errors:', result.errors);
+        showToast(`${result.errors.length} errores durante la importación. Revisa la consola.`, 'error');
+      }
+    } catch (error) {
+      console.error('Error importing file:', error);
+      showToast('Error al procesar el archivo Excel', 'error');
+    } finally {
+      setImporting(false);
+      e.target.value = ''; // Reset file input
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por nombre, DNI o email..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white placeholder-gray-600 outline-none focus:border-gold transition-colors text-sm"
-          />
+        <div className="flex flex-col sm:flex-row gap-3 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por DNI, teléfono o placa..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-white placeholder-gray-600 outline-none focus:border-gold transition-colors text-sm"
+            />
+          </div>
+          <div className="relative min-w-[200px]">
+            <select
+              value={selectedSede}
+              onChange={(e) => setSelectedSede(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-4 pr-10 py-2.5 text-white outline-none focus:border-gold transition-colors text-sm appearance-none cursor-pointer"
+            >
+              <option value="">Todas las sedes</option>
+              {sedes.map((sede) => (
+                <option key={sede} value={sede} className="bg-zinc-900 text-white">
+                  {sede}
+                </option>
+              ))}
+            </select>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs">▼</span>
+          </div>
         </div>
-        <button
-          onClick={handleExport}
-          disabled={participants.length === 0}
-          className="flex items-center gap-2 bg-[#107c41] hover:bg-[#107c41]/80 border border-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Download size={15} />
-          Exportar Excel
-        </button>
+        <div className="flex gap-3">
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleImport}
+            disabled={importing}
+            className="hidden"
+            id="excel-import"
+          />
+          <button
+            onClick={() => document.getElementById('excel-import')?.click()}
+            disabled={importing}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border border-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Upload size={15} />
+            {importing ? 'Importando...' : 'Importar Excel'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={participants.length === 0}
+            className="flex items-center gap-2 bg-[#107c41] hover:bg-[#107c41]/80 border border-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Download size={15} />
+            Exportar Excel
+          </button>
+        </div>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
@@ -88,7 +155,7 @@ export default function ParticipantsTable() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/10">
-                  {['Nombre', 'DNI', 'Email', 'Telefono', 'Placa', 'Predicciones', 'Fecha', ''].map((h) => (
+                  {['DNI', 'Telefono', 'Placa', 'Sede', 'Ticket', 'Predicciones', 'Fecha', ''].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
@@ -105,22 +172,17 @@ export default function ParticipantsTable() {
                     className={`border-b border-white/5 hover:bg-white/5 transition-colors ${i % 2 === 0 ? '' : 'bg-white/2'
                       }`}
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-800 to-black border border-white/10 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-black text-gold">
-                            {p.fullName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <span className="text-white text-sm font-medium">{p.fullName}</span>
-                      </div>
-                    </td>
                     <td className="px-4 py-3 text-gray-400 text-sm">{p.dni}</td>
-                    <td className="px-4 py-3 text-gray-400 text-sm">{p.email}</td>
                     <td className="px-4 py-3 text-gray-400 text-sm">{p.phone}</td>
                     <td className="px-4 py-3">
                       <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2.5 py-0.5 rounded font-mono font-bold text-xs uppercase">
                         {p.placa || 'N/A'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 text-sm">{p.sede || 'N/A'}</td>
+                    <td className="px-4 py-3">
+                      <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded font-mono font-bold text-xs">
+                        {p.ticketCode || 'N/A'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

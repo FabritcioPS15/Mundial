@@ -9,6 +9,7 @@ import {
   getBracketData,
   saveBracketData,
   deleteParticipant,
+  importParticipantsFromExcel,
 } from '../utils/supabaseStorage';
 
 interface Toast {
@@ -29,9 +30,19 @@ interface AppContextType {
       champion: string;
       subchampion: string;
       thirdPlace: string;
+      sede?: string;
     }
   ) => Promise<boolean>;
   removeParticipant: (id: string) => Promise<void>;
+  importParticipants: (data: Array<{
+    DNI: string;
+    Telefono: string;
+    Placa: string;
+    Sede?: string;
+    Campeon?: string;
+    Subcampeon?: string;
+    TercerPuesto?: string;
+  }>) => Promise<{ success: number; errors: string[] }>;
   conductDraw: () => Promise<Winner | null>;
   showToast: (message: string, type: Toast['type']) => void;
   dismissToast: (id: string) => void;
@@ -93,24 +104,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const registerParticipant = useCallback(
     async (data: Omit<Participant, 'id' | 'registeredAt'> & { champion: string; subchampion: string; thirdPlace: string; }) => {
-      // Check for duplicate DNI or email
+      // Check for duplicate DNI
       const existing = await fetchParticipants();
       if (existing.some((p) => p.dni.toLowerCase() === data.dni.toLowerCase())) {
         showToast('Este DNI ya está registrado', 'error');
         return false;
       }
-      if (existing.some((p) => p.email.toLowerCase() === data.email.toLowerCase())) {
-        showToast('Este email ya está registrado', 'error');
-        return false;
-      }
       const ticketCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       // Insert participant core data
       await insertParticipant({
-        fullName: data.fullName,
         dni: data.dni,
-        email: data.email,
         phone: data.phone,
         placa: data.placa,
+        sede: data.sede,
         ticketCode: ticketCode,
       });
       // Retrieve the newly created participant to get its ID
@@ -143,6 +149,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('Error deleting participant', err);
       showToast('Error al eliminar participante. Revisa los permisos.', 'error');
+    }
+  }, [showToast]);
+
+  const importParticipants = useCallback(async (data: Array<{
+    DNI: string;
+    Telefono: string;
+    Placa: string;
+    Sede?: string;
+    Campeon?: string;
+    Subcampeon?: string;
+    TercerPuesto?: string;
+  }>) => {
+    try {
+      const result = await importParticipantsFromExcel(data);
+      if (result.success > 0) {
+        setParticipants(await fetchParticipants());
+        showToast(`${result.success} participantes importados exitosamente`, 'success');
+      }
+      if (result.errors.length > 0) {
+        result.errors.forEach(err => console.error(err));
+        showToast(`${result.errors.length} errores durante la importación`, 'error');
+      }
+      return result;
+    } catch (err) {
+      console.error('Error importing participants', err);
+      showToast('Error al importar participantes', 'error');
+      return { success: 0, errors: ['Error general al importar'] };
     }
   }, [showToast]);
 
@@ -181,6 +214,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setExcludePrevious,
         registerParticipant,
         removeParticipant,
+        importParticipants,
         conductDraw,
         showToast,
         dismissToast,
