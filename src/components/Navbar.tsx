@@ -37,7 +37,7 @@ export default function Navbar({ onNavClick }: NavbarProps) {
             <BsFillPeopleFill className="text-orange-500 w-4 h-4 animate-pulse" />
             <span className="text-zinc-200 text-xs font-semibold">
               <span className="font-black text-orange-500 mr-1">{participants.length}</span>
-              {participants.length === 1 ? 'persona inscrita actualmente' : 'personas inscritas actualmente'}
+              {participants.length === 1 ? 'persona inscrita' : 'personas inscritas'}
             </span>
           </a>
         </div>

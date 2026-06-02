@@ -325,9 +325,9 @@ export default function WorldCupBracket() {
       </div>
 
       {activeTab === 'bracket' ? (
-        /* Round of 16 Bracket tree with horizontal scrolling on mobile, 4 columns layout on desktop */
-        <div className="w-full overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-transparent">
-          <div className="min-w-[1000px] lg:min-w-0 grid grid-cols-4 gap-6 items-start relative z-10 select-none px-2">
+        /* Round of 16 Bracket tree - stacked on mobile, 4 columns on desktop */
+        <div className="w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 items-start relative z-10 select-none px-2">
 
             {/* COLUMN 1: OCTAVOS DE FINAL */}
             <div className="space-y-4">
@@ -357,8 +357,7 @@ export default function WorldCupBracket() {
                 Cuartos de Final
               </h4>
 
-              {/* Spaced vertically to line up with Octavos on desktop */}
-              <div className="space-y-4 md:space-y-24 md:pt-10">
+              <div className="space-y-4">
                 {quarters.map((m) => (
                   <div key={m.id} className="bg-white border border-zinc-200/85 rounded-2xl p-3 shadow-md hover:border-orange-500/20 transition-all duration-300">
                     <div className="flex items-center justify-between text-[9px] text-zinc-400 mb-2 border-b border-zinc-100 pb-1 font-mono uppercase tracking-wider">
@@ -380,8 +379,7 @@ export default function WorldCupBracket() {
                 Semifinales
               </h4>
 
-              {/* Spaced vertically to line up with Cuartos */}
-              <div className="space-y-4 md:space-y-[340px] md:pt-[130px]">
+              <div className="space-y-4">
                 {semis.map((m) => (
                   <div key={m.id} className="bg-white border border-zinc-200/85 rounded-2xl p-3.5 shadow-md hover:border-orange-500/20 transition-all duration-300">
                     <div className="flex items-center justify-between text-[9px] text-zinc-400 mb-2 border-b border-zinc-100 pb-1 font-mono uppercase tracking-wider">
@@ -403,7 +401,7 @@ export default function WorldCupBracket() {
                 Gran Final
               </h4>
 
-              <div className="space-y-6 md:pt-[220px]">
+              <div className="space-y-6">
                 <div className="bg-gradient-to-b from-orange-500/5 to-white border border-orange-500/20 rounded-3xl p-5 shadow-[0_15px_40px_rgba(249,115,22,0.06)] relative overflow-hidden">
 
                   <div className="text-center mb-4 relative">

@@ -7,14 +7,14 @@ export default function RecentParticipants() {
   const recent = [...participants].reverse().slice(0, 10);
 
   return (
-    <section id="recent-section" className="py-16 px-4 bg-transparent relative">
-      <div className="max-w-2xl mx-auto">
+    <section id="recent-section" className="py-12 md:py-16 px-4 bg-transparent relative">
+      <div className="max-w-full md:max-w-2xl mx-auto">
 
-        <div className="text-center mb-6 select-none">
+        <div className="text-center mb-4 md:mb-6 select-none">
           <p className="text-orange-500 font-black tracking-widest uppercase text-xs mb-1">
             Comunidad
           </p>
-          <h2 className="font-teko text-5xl text-zinc-900 uppercase tracking-widest">
+          <h2 className="font-teko text-4xl md:text-5xl text-zinc-900 uppercase tracking-widest">
             Últimos Registrados
           </h2>
           <div className="w-12 h-[2px] bg-orange-500 mx-auto mt-2 rounded-full" />

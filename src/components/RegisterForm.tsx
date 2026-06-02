@@ -2,10 +2,12 @@ import { useState, type FormEvent, forwardRef } from 'react';
 import { User, CreditCard, Phone, Car } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTeamFlagUrl } from '../utils/flagHelper';
+import { getSocialMediaBySede, getIconComponent } from '../utils/sedeSocialMedia';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
-import { FaCar, FaDownload, FaPlus, FaQrcode, FaShieldAlt, FaTrophy, FaCalendarAlt } from 'react-icons/fa';
+import { FaCar, FaDownload, FaPlus, FaShieldAlt, FaTrophy, FaCalendarAlt, FaHospital } from 'react-icons/fa';
 import { FaStar } from "react-icons/fa6";
+import { IoSchool } from 'react-icons/io5';
 
 const GoldMedalIcon = () => (
   <svg className="w-12 h-12 filter drop-shadow-md select-none shrink-0" viewBox="0 0 100 100" fill="none">
@@ -154,7 +156,7 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
   });
 
   const [errors, setErrors] = useState<Partial<typeof form>>({});
-  const [openDropdown, setOpenDropdown] = useState<'champion' | 'subchampion' | 'thirdPlace' | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<'champion' | 'subchampion' | 'thirdPlace' | 'sede' | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [lastRegistered, setLastRegistered] = useState<{
@@ -163,6 +165,7 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
     subchampion: string;
     thirdPlace: string;
     ticketCode: string;
+    sede: string;
   } | null>(null);
 
   const validate = () => {
@@ -232,6 +235,7 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
           subchampion: form.subchampion,
           thirdPlace: form.thirdPlace,
           ticketCode,
+          sede: form.sede,
         });
         setSuccess(true);
         setForm({
@@ -279,8 +283,8 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   return (
-    <div ref={ref} className="w-full max-w-xl mx-auto lg:mr-0 relative">
-      <div className="bg-[#111111] border border-orange-500/50 rounded-3xl p-6 md:p-8 shadow-2xl relative transition-all duration-300 overflow-hidden">
+    <div ref={ref} className="w-full max-w-full lg:max-w-xl mx-auto relative">
+      <div className="bg-[#111111] border border-orange-500/50 rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl relative transition-all duration-300 overflow-hidden">
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -296,15 +300,16 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
         </div>
 
         {success && lastRegistered ? (
-          <div className="text-center py-0 animate-scale-in relative z-10">
-            <h3 className="font-teko text-4xl text-orange-500 mb-2 uppercase tracking-wide">¡REGISTRO CONFIRMADO!</h3>
+          <div className="text-center py-4 animate-scale-in relative z-10">
+            <h3 className="font-teko text-3xl sm:text-4xl text-orange-500 mb-2 uppercase tracking-wide">¡REGISTRO CONFIRMADO!</h3>
             {/* TICKET WRAPPER */}
             <div className="w-full overflow-x-auto pb-4 flex justify-start sm:justify-center" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
               <div
                 id="ticket-container"
                 style={{
-                  width: '480px',
-                  minWidth: '480px',
+                  width: '100%',
+                  maxWidth: '480px',
+                  minWidth: '320px',
                   margin: '0 auto 16px',
                   borderRadius: '16px',
                   overflow: 'hidden',
@@ -318,18 +323,15 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
                 {/* HEADER SECTION */}
                 <div style={{
                   position: 'relative',
-                  padding: '12px 16px 16px',
+                  padding: '1px 26px 10px',
                   backgroundImage: 'url(/Ticket3.webp)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center -30px',
+                  backgroundSize: '100% 100%',
+                  backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
                 }}>
                   {/* Top Bar: Logo and RTP Ticket */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <img src="/LogoRTPSanCristobal_horizontal.png" alt="RTP" style={{ height: '24px', filter: 'brightness(0) invert(1)' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                    <div style={{ border: '1px solid rgba(249,115,22,0.5)', borderRadius: '20px', padding: '4px 10px', fontSize: '9px', fontWeight: 800, color: '#fff', letterSpacing: '0.1em' }}>
-                      RTP TICKET
-                    </div>
+                    <img src="/LogoRTPSanCristobal_horizontal.png" alt="RTP" style={{ height: '14px', filter: 'brightness(0) invert(1)' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
 
                   {/* Title */}
@@ -364,10 +366,10 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
                 </div>
 
                 {/* SEPARATOR WITH NOTCHES */}
-                <div style={{ position: 'relative', height: '2px', display: 'flex', alignItems: 'center' }}>
-                  <div style={{ position: 'absolute', left: '-12px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#1c1b1e', zIndex: 2 }} />
-                  <div style={{ flex: 1, borderTop: '2px dashed rgba(255,255,255,0.15)', margin: '0 20px' }} />
-                  <div style={{ position: 'absolute', right: '-12px', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#1c1b1e', zIndex: 2 }} />
+                <div style={{ position: 'relative', height: '24px', display: 'flex', alignItems: 'center', margin: '0 -16px' }}>
+                  <div style={{ position: 'absolute', left: '0', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#0A0A0A', zIndex: 2, border: '2px solid #0A0A0A' }} />
+                  <div style={{ flex: 1, borderTop: '2px dashed rgba(255,255,255,0.15)', margin: '0 12px' }} />
+                  <div style={{ position: 'absolute', right: '0', width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#0A0A0A', zIndex: 2, border: '2px solid #0A0A0A' }} />
                 </div>
 
                 {/* BODY SECTION */}
@@ -398,13 +400,13 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
                         </div>
                         <div style={{ fontSize: '12px', color: '#888', fontWeight: 500, width: '90px' }}>{row.label}</div>
                         <div style={{ width: '1px', height: '18px', background: '#333', marginRight: '16px' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                           {row.val && getFlagByCountryName(row.val) ? (
                             <img src={getFlagByCountryName(row.val)!} style={{ width: '24px', height: '16px', objectFit: 'cover', borderRadius: '3px' }} alt="" />
                           ) : (
                             <div style={{ width: '24px', height: '16px', background: '#333', borderRadius: '3px' }} />
                           )}
-                          <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.val}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{row.val}</div>
                         </div>
                       </div>
                     ))}
@@ -498,50 +500,75 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
             </div>
 
             {/* Agradecimiento y Redes Sociales */}
-            <div className="mt-8 pt-6 border-t border-white/10 text-center">
-              <div className="mb-4">
-                <p className="text-white font-bold text-lg mb-2">¡Gracias por registrarte!</p>
-                <p className="text-zinc-400 text-sm">Tu participación es muy importante para nosotros</p>
+            <div className="mt-6 pt-4 border-t border-white/10 text-center">
+              <div className="mb-3">
+                <p className="text-white font-bold text-base sm:text-lg mb-2">¡Gracias por registrarte!</p>
+                <p className="text-zinc-400 text-xs sm:text-sm">Tu participación es muy importante para nosotros</p>
               </div>
-              <div className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-500/30 rounded-xl p-4 mb-4">
+              <div className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-500/30 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
                 <p className="text-orange-400 text-xs font-bold mb-1">⚠️ IMPORTANTE</p>
-                <p className="text-white text-sm">Si aciertas las predicciones, confirmaremos que sigues nuestras redes sociales para hacerte acreedor del premio</p>
+                <p className="text-white text-xs sm:text-sm">Si aciertas las predicciones, confirmaremos que sigues nuestras redes sociales para hacerte acreedor del premio</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-zinc-300 text-xs mb-3 font-medium">Síguenos en nuestras redes sociales</p>
-                <div className="flex justify-center gap-4">
-                  <a
-                    href="https://facebook.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  </a>
-                  <a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                  </a>
-                  <a
-                    href="https://twitter.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-black hover:bg-zinc-800 border border-white/20 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  </a>
-                  <a
-                    href="https://tiktok.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-black hover:bg-zinc-800 rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.67-10.92 6.33 6.33 0 0 0 3.92-10.49z"/></svg>
-                  </a>
+              <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                <p className="text-zinc-300 text-xs mb-2 sm:mb-3 font-medium">Síguenos en nuestras redes sociales</p>
+                <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
+                  {(() => {
+                    const sedeName = lastRegistered?.sede || '';
+                    console.log('Sede registrada:', sedeName);
+                    const socialMedia = getSocialMediaBySede(sedeName);
+                    console.log('Redes sociales encontradas:', socialMedia);
+                    if (socialMedia.length === 0) {
+                      // Redes sociales por defecto si no hay configuración para la sede
+                      return (
+                        <>
+                          <a
+                            href="https://facebook.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors text-white"
+                          >
+                            {getIconComponent('facebook')}
+                          </a>
+                          <a
+                            href="https://instagram.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-full flex items-center justify-center transition-colors text-white"
+                          >
+                            {getIconComponent('instagram')}
+                          </a>
+                          <a
+                            href="https://twitter.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-black hover:bg-zinc-800 border border-white/20 rounded-full flex items-center justify-center transition-colors text-white"
+                          >
+                            {getIconComponent('twitter')}
+                          </a>
+                          <a
+                            href="https://tiktok.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-12 h-12 bg-black hover:bg-zinc-800 rounded-full flex items-center justify-center transition-colors text-white"
+                          >
+                            {getIconComponent('tiktok')}
+                          </a>
+                        </>
+                      );
+                    }
+                    // Mostrar redes sociales específicas de la sede
+                    return socialMedia.map((social) => (
+                      <a
+                        key={social.name}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-12 h-12 ${social.bgColor} ${social.hoverColor} rounded-full flex items-center justify-center transition-colors text-white`}
+                      >
+                        {getIconComponent(social.iconType)}
+                      </a>
+                    ));
+                  })()}
                 </div>
               </div>
             </div>
@@ -617,29 +644,107 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <circle cx="12" cy="10" r="3" />
                       </svg>
-                      <select
-                        value={form.sede}
-                        onChange={(e) => {
-                          setForm((f) => ({ ...f, sede: e.target.value }));
-                          if (errors.sede) setErrors((err) => ({ ...err, sede: undefined }));
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenDropdown(openDropdown === 'sede' ? null : 'sede');
                         }}
-                        className={`w-full bg-white border rounded-xl pl-11 pr-4 py-3 text-zinc-950 outline-none transition-all text-xs appearance-none cursor-pointer focus:ring-4 focus:ring-orange-500/10 ${errors.sede ? 'border-red-400 focus:border-red-500' : 'border-zinc-200 focus:border-orange-500'
+                        className={`w-full bg-white border rounded-xl pl-11 pr-10 py-3 text-zinc-950 outline-none transition-all text-xs appearance-none cursor-pointer focus:ring-4 focus:ring-orange-500/10 text-left flex items-center justify-between ${errors.sede ? 'border-red-400 focus:border-red-500' : 'border-zinc-200 focus:border-orange-500'
                           }`}
                       >
-                        <option value="" disabled>Selecciona una sede...</option>
-                        <optgroup label="🟠 RTP San Cristóbal">
-                          <option value="RTP San Cristóbal Canta Callao">RTP San Cristóbal Canta Callao</option>
-                          <option value="RTP San Cristóbal Callao">RTP San Cristóbal Callao</option>
-                          <option value="RTP San Cristóbal Ayacucho">RTP San Cristóbal Ayacucho</option>
-                          <option value="RTP San Cristóbal Andahuaylas">RTP San Cristóbal Andahuaylas</option>
-                        </optgroup>
-                        <optgroup label="🔵 RTV San Cristóbal">
-                          <option value="RTV San Cristóbal Ayacucho">RTV San Cristóbal Ayacucho</option>
-                          <option value="RTV San Cristóbal Ica">RTV San Cristóbal Ica</option>
-                          <option value="RTV San Cristóbal Huancavelica">RTV San Cristóbal Huancavelica</option>
-                        </optgroup>
-                      </select>
-                      <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 text-[10px]">▼</span>
+                        <span className={form.sede ? 'text-zinc-950 font-medium' : 'text-zinc-400'}>
+                          {form.sede || 'Selecciona una sede...'}
+                        </span>
+                        <span className="text-zinc-400 text-[10px]">▼</span>
+                      </button>
+
+                      {openDropdown === 'sede' && (
+                        <>
+                          <div className="fixed inset-0 z-40 cursor-default" onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(null);
+                          }} />
+                          <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-zinc-200/80 rounded-2xl shadow-2xl p-3 z-50 origin-top animate-scale-in max-h-[320px] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                            <div className="space-y-3">
+                              {/* Revisiones Técnicas */}
+                              <div>
+                                <div className="flex items-center gap-2 px-2 py-1.5 bg-orange-50 rounded-lg mb-2">
+                                  <FaCar className="text-orange-500 text-sm" />
+                                  <span className="text-xs font-bold text-orange-700 uppercase tracking-wide">Revisiones Técnicas</span>
+                                </div>
+                                <div className="space-y-1 pl-2">
+                                  {['RTP SAN CRISTOBAL CANTA CALLAO', 'RTP SAN CRISTOBAL CALLAO', 'RTP SAN CRISTOBAL AYACUCHO', 'RTP SAN CRISTOBAL ANDAHUAYLAS', 'RTV SAN CRISTOBAL AYACUCHO', 'RTV SAN CRISTOBAL ICA', 'RTV SAN CRISTOBAL HUANCAVELICA'].map((sede) => (
+                                  <button
+                                    key={sede}
+                                    type="button"
+                                    onClick={() => {
+                                      setForm((f) => ({ ...f, sede }));
+                                      if (errors.sede) setErrors((err) => ({ ...err, sede: undefined }));
+                                      setOpenDropdown(null);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all ${form.sede === sede ? 'bg-orange-500 text-white' : 'hover:bg-zinc-100 text-zinc-700'
+                                      }`}
+                                  >
+                                    {sede}
+                                  </button>
+                                ))}
+                                </div>
+                              </div>
+
+                              {/* Escuela de Conductores */}
+                              <div>
+                                <div className="flex items-center gap-2 px-2 py-1.5 bg-blue-50 rounded-lg mb-2">
+                                  <IoSchool className="text-blue-500 text-sm" />
+                                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Escuela de Conductores</span>
+                                </div>
+                                <div className="space-y-1 pl-2">
+                                  {['SAN CRISTOBAL VIP IZAGUIRRE', 'SAN CRISTOBAL VIP CALLAO', 'SAN CRISTOBAL VIP HUACHO', 'SAN CRISTOBAL VIP HUANCAVELICA', 'MI BREVETE SEGURO ATE', 'MI BREVETE SEGURO AYACUCHO', 'SAN CRISTOBAL DEL PERU ICA', 'SAN CRISTOBAL DEL PERU ANDAHUAYLAS'].map((sede) => (
+                                  <button
+                                    key={sede}
+                                    type="button"
+                                    onClick={() => {
+                                      setForm((f) => ({ ...f, sede }));
+                                      if (errors.sede) setErrors((err) => ({ ...err, sede: undefined }));
+                                      setOpenDropdown(null);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all ${form.sede === sede ? 'bg-blue-500 text-white' : 'hover:bg-zinc-100 text-zinc-700'
+                                      }`}
+                                  >
+                                    {sede}
+                                  </button>
+                                ))}
+                                </div>
+                              </div>
+
+                              {/* Policlinico */}
+                              <div>
+                                <div className="flex items-center gap-2 px-2 py-1.5 bg-green-50 rounded-lg mb-2">
+                                  <FaHospital className="text-green-500 text-sm" />
+                                  <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Policlinico</span>
+                                </div>
+                                <div className="space-y-1 pl-2">
+                                  {['MI BREVETE SEGURO IZAGUIRRE', 'BREVETES APURIMAC AYACUCHO', 'BREVETES APURIMAC ANDAHUAYLAS'].map((sede) => (
+                                  <button
+                                    key={sede}
+                                    type="button"
+                                    onClick={() => {
+                                      setForm((f) => ({ ...f, sede }));
+                                      if (errors.sede) setErrors((err) => ({ ...err, sede: undefined }));
+                                      setOpenDropdown(null);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all ${form.sede === sede ? 'bg-green-500 text-white' : 'hover:bg-zinc-100 text-zinc-700'
+                                      }`}
+                                  >
+                                    {sede}
+                                  </button>
+                                ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                     {errors.sede && <p className="text-red-400 text-[10px] text-left pl-2 font-bold">{errors.sede}</p>}
                   </div>
@@ -706,7 +811,7 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
 
                 <div className="relative pt-2">
                   {/* Single Consolidated Dropdown Panel relative to the full grid */}
-                  {openDropdown && (
+                  {openDropdown && openDropdown !== 'sede' && (
                     <>
                       {/* Close backdrop */}
                       <div className="fixed inset-0 z-40 cursor-default" onClick={() => setOpenDropdown(null)} />
