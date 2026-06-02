@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Trophy, BarChart2, LogOut, Menu, X, Home, Activity } from 'lucide-react';
+import { Users, Trophy, BarChart2, LogOut, Menu, X, Home, Activity, TrendingUp, Calendar, Award, Shield } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ParticipantsTable from './ParticipantsTable';
 import DrawSection from './DrawSection';
@@ -28,6 +28,14 @@ export default function AdminDashboard({ onLogout }: Props) {
 
   const recent = [...participants].reverse().slice(0, 5);
 
+  // Calculate additional metrics
+  const withPredictions = participants.filter(p => p.champion);
+  const uniqueSedes = new Set(participants.map(p => p.sede).filter(Boolean)).size;
+  const todayRegistrations = participants.filter(p => {
+    const today = new Date().toDateString();
+    return new Date(p.registeredAt).toDateString() === today;
+  }).length;
+
   const handleLogout = () => {
     sessionStorage.removeItem('admin_auth');
     onLogout();
@@ -37,13 +45,13 @@ export default function AdminDashboard({ onLogout }: Props) {
     <div className="min-h-screen bg-black flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-zinc-900 to-black border-r border-white/10 transform transition-transform duration-300 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-zinc-900 via-zinc-900 to-black border-r border-white/10 transform transition-transform duration-300 md:translate-x-0 ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-            <Trophy size={18} className="text-black" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <Trophy size={20} className="text-black" />
           </div>
           <div>
             <p className="text-white font-black text-sm leading-tight">Admin Panel</p>
@@ -58,7 +66,7 @@ export default function AdminDashboard({ onLogout }: Props) {
               onClick={() => { setTab(id); setMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                 tab === id
-                  ? 'bg-gold text-black'
+                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-black shadow-lg shadow-orange-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -103,7 +111,7 @@ export default function AdminDashboard({ onLogout }: Props) {
           </div>
           <a
             href="/"
-            className="text-gray-500 hover:text-gold text-sm transition-colors flex items-center gap-1.5"
+            className="text-gray-500 hover:text-orange-400 text-sm transition-colors flex items-center gap-1.5"
           >
             <Home size={14} /> Sitio publico
           </a>
@@ -112,20 +120,39 @@ export default function AdminDashboard({ onLogout }: Props) {
         <main className="flex-1 p-4 md:p-6">
           {tab === 'dashboard' && (
             <div className="space-y-6">
-              {/* Stats */}
+              {/* Main Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Total participantes', value: participants.length, color: 'text-white', icon: Users },
-                  { label: 'Sorteos realizados', value: winners.length, color: 'text-gold', icon: Trophy },
-                  { label: 'Elegibles activos', value: participants.filter(p => !winners.some(w => w.participant.id === p.id)).length, color: 'text-emerald-400', icon: Users },
-                  { label: 'Ultimo sorteo', value: winners.length > 0 ? new Date(winners[winners.length - 1].drawnAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '—', color: 'text-gray-300', icon: Trophy },
-                ].map(({ label, value, color, icon: Icon }) => (
-                  <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                  { label: 'Total participantes', value: participants.length, color: 'text-white', icon: Users, gradient: 'from-blue-500/20 to-blue-600/10' },
+                  { label: 'Sorteos realizados', value: winners.length, color: 'text-orange-400', icon: Trophy, gradient: 'from-orange-500/20 to-orange-600/10' },
+                  { label: 'Elegibles activos', value: participants.filter(p => !winners.some(w => w.participant.id === p.id)).length, color: 'text-emerald-400', icon: Shield, gradient: 'from-emerald-500/20 to-emerald-600/10' },
+                  { label: 'Con predicciones', value: withPredictions.length, color: 'text-purple-400', icon: Award, gradient: 'from-purple-500/20 to-purple-600/10' },
+                ].map(({ label, value, color, icon: Icon, gradient }) => (
+                  <div key={label} className={`bg-gradient-to-br ${gradient} border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all`}>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide">{label}</p>
-                      <Icon size={16} className="text-gray-700" />
+                      <p className="text-gray-400 text-xs font-semibold uppercase tracking-wide">{label}</p>
+                      <Icon size={16} className={color} />
                     </div>
-                    <p className={`text-2xl font-black ${color}`}>{value}</p>
+                    <p className={`text-3xl font-black ${color}`}>{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Secondary Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { label: 'Sedes activas', value: uniqueSedes, icon: Home, color: 'text-cyan-400' },
+                  { label: 'Registros hoy', value: todayRegistrations, icon: Calendar, color: 'text-pink-400' },
+                  { label: 'Tasa de predicciones', value: participants.length > 0 ? `${((withPredictions.length / participants.length) * 100).toFixed(1)}%` : '0%', icon: TrendingUp, color: 'text-yellow-400' },
+                ].map(({ label, value, icon: Icon, color }) => (
+                  <div key={label} className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-all">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                      <Icon size={20} className={color} />
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide">{label}</p>
+                      <p className={`text-xl font-black ${color}`}>{value}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -136,33 +163,33 @@ export default function AdminDashboard({ onLogout }: Props) {
               {/* Recent */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                  <Users size={16} className="text-gold" /> Ultimos Registros
+                  <Users size={16} className="text-orange-400" /> Ultimos Registros
                 </h3>
                 {recent.length === 0 ? (
                   <p className="text-gray-500 text-sm text-center py-6">Sin participantes aun</p>
                 ) : (
                   <div className="space-y-3">
                     {recent.map((p) => (
-                      <div key={p.id} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center shrink-0">
-                          <span className="text-gold text-xs font-black">{p.placa?.charAt(0) || p.dni.charAt(0)}</span>
+                      <div key={p.id} className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 rounded-lg px-2 transition-all">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400/20 to-orange-600/20 border border-orange-500/30 flex items-center justify-center shrink-0">
+                          <span className="text-orange-400 text-sm font-black">{p.placa?.charAt(0) || p.dni.charAt(0)}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-white text-sm font-medium truncate">{p.dni}</p>
-                            <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-1.5 py-0.5 rounded font-mono font-bold text-[9px] uppercase">
+                            <span className="bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2 py-0.5 rounded font-mono font-bold text-[10px] uppercase">
                               {p.placa || 'N/A'}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <p className="text-gray-600 text-xs">{p.phone}</p>
-                            {p.sede && <span className="text-gray-500 text-[10px]">• {p.sede}</span>}
+                            <p className="text-gray-500 text-xs">{p.phone}</p>
+                            {p.sede && <span className="text-gray-600 text-[10px]">• {p.sede}</span>}
                           </div>
                           {p.ticketCode && (
                             <p className="text-blue-400 text-[10px] font-mono">{p.ticketCode}</p>
                           )}
                         </div>
-                        <span className="text-gray-600 text-xs">
+                        <span className="text-gray-500 text-xs">
                           {new Date(p.registeredAt).toLocaleDateString('es-ES')}
                         </span>
                       </div>

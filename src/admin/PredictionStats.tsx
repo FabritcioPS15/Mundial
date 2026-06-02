@@ -1,4 +1,4 @@
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, BarChart3 } from 'lucide-react';
 import { getTeamFlagUrl } from '../utils/flagHelper';
 import type { Participant } from '../types';
 
@@ -68,47 +68,53 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
   const thirdPlaceStats = calculateStats('thirdPlace');
   const trendData = calculateTrend();
 
-  const StatCard = ({ title, icon: Icon, stats, color }: {
+  const StatCard = ({ title, icon: Icon, stats, color, gradient }: {
     title: string;
     icon: any;
     stats: TeamStat[];
     color: string;
+    gradient: string;
   }) => {
     const maxCount = Math.max(...stats.map(s => s.count), 1);
 
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
         <div className="flex items-center gap-2 mb-4">
-          <Icon size={18} className={color} />
+          <div className={`w-8 h-8 rounded-lg ${gradient} flex items-center justify-center`}>
+            <Icon size={16} className={color} />
+          </div>
           <h3 className="text-white font-bold text-sm uppercase tracking-wider">{title}</h3>
         </div>
 
         {stats.length === 0 ? (
-          <p className="text-gray-500 text-xs text-center py-4">Sin datos aún</p>
+          <div className="text-center py-6">
+            <BarChart3 size={24} className="mx-auto text-gray-600 mb-2" />
+            <p className="text-gray-500 text-xs">Sin datos aún</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {stats.map((stat, index) => (
-              <div key={stat.name} className="flex items-end gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getTeamFlagUrl('', stat.name) && (
-                      <img
-                        src={getTeamFlagUrl('', stat.name)!}
-                        alt=""
-                        className="w-4 h-3 rounded object-cover"
-                      />
-                    )}
-                    <span className="text-white text-xs font-medium truncate">{stat.name}</span>
-                    <span className="text-gray-400 text-[10px] font-mono ml-auto">{stat.count}</span>
-                  </div>
-                  <div className="h-8 bg-zinc-800 rounded-lg overflow-hidden relative">
-                    <div
-                      className={`h-full rounded-lg transition-all duration-500 ${color.replace('text-', 'bg-')} bg-opacity-80`}
-                      style={{ width: `${(stat.count / maxCount) * 100}%` }}
+              <div key={stat.name} className="group">
+                <div className="flex items-center gap-2 mb-1.5">
+                  {getTeamFlagUrl('', stat.name) && (
+                    <img
+                      src={getTeamFlagUrl('', stat.name)!}
+                      alt=""
+                      className="w-5 h-4 rounded object-cover border border-white/10"
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white drop-shadow">
-                      {stat.percentage.toFixed(1)}%
-                    </span>
+                  )}
+                  <span className="text-white text-xs font-medium truncate flex-1">{stat.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-400 text-[10px] font-mono">{stat.count}</span>
+                    <span className={`text-[10px] font-bold ${color}`}>{stat.percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+                <div className="h-10 bg-zinc-800/50 rounded-xl overflow-hidden relative group-hover:bg-zinc-800 transition-colors">
+                  <div
+                    className={`h-full rounded-xl transition-all duration-700 ease-out ${gradient} relative`}
+                    style={{ width: `${(stat.count / maxCount) * 100}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent" />
                   </div>
                 </div>
               </div>
@@ -124,8 +130,8 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
 
     const maxCount = Math.max(...data.map(d => d.count));
     const width = 100;
-    const height = 60;
-    const padding = 5;
+    const height = 70;
+    const padding = 8;
 
     const points = data.map((d, i) => {
       const x = padding + (i / (data.length - 1)) * (width - 2 * padding);
@@ -133,14 +139,18 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
       return `${x},${y}`;
     }).join(' ');
 
+    const areaPoints = `${padding},${height - padding} ${points} ${width - padding},${height - padding}`;
+
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+      <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={18} className="text-gold" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center">
+            <TrendingUp size={16} className="text-orange-400" />
+          </div>
           <h3 className="text-white font-bold text-sm uppercase tracking-wider">Evolución de Predicciones</h3>
         </div>
         <div className="relative">
-          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
             {/* Grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
               <line
@@ -149,38 +159,64 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
                 y1={height - padding - ratio * (height - 2 * padding)}
                 x2={width - padding}
                 y2={height - padding - ratio * (height - 2 * padding)}
-                stroke="rgba(255,255,255,0.1)"
+                stroke="rgba(255,255,255,0.05)"
                 strokeWidth="0.5"
+                strokeDasharray="2,2"
               />
             ))}
+            {/* Area fill */}
+            <polygon
+              points={areaPoints}
+              fill="url(#gradient)"
+              opacity="0.3"
+            />
             {/* Line */}
             <polyline
               points={points}
               fill="none"
-              stroke="#f59e0b"
-              strokeWidth="2"
+              stroke="url(#lineGradient)"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="drop-shadow-lg"
             />
             {/* Points */}
             {data.map((d, i) => {
               const x = padding + (i / (data.length - 1)) * (width - 2 * padding);
               const y = height - padding - (d.count / maxCount) * (height - 2 * padding);
               return (
-                <circle
-                  key={i}
-                  cx={x}
-                  cy={y}
-                  r="2"
-                  fill="#f59e0b"
-                  className="hover:r-3 transition-all"
-                />
+                <g key={i}>
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill="#f59e0b"
+                    className="hover:r-5 transition-all cursor-pointer"
+                  />
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="2"
+                    fill="#fff"
+                  />
+                </g>
               );
             })}
+            {/* Gradients */}
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#fbbf24" />
+              </linearGradient>
+            </defs>
           </svg>
-          <div className="flex justify-between mt-2 text-[10px] text-gray-500">
-            <span>{data[0].date}</span>
-            <span>{data[data.length - 1].date}</span>
+          <div className="flex justify-between mt-3 text-[10px] text-gray-500">
+            <span className="font-medium">{data[0].date}</span>
+            <span className="font-medium">{data[data.length - 1].date}</span>
           </div>
         </div>
       </div>
@@ -188,9 +224,11 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center gap-2 mb-2">
-        <Trophy size={20} className="text-gold" />
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center">
+          <Trophy size={16} className="text-orange-400" />
+        </div>
         <h2 className="text-white font-bold text-lg uppercase tracking-wider">Estadísticas de Predicciones</h2>
       </div>
 
@@ -202,25 +240,31 @@ export default function PredictionStats({ participants }: PredictionStatsProps) 
           icon={Trophy}
           stats={championStats}
           color="text-yellow-400"
+          gradient="bg-gradient-to-br from-yellow-500/20 to-yellow-600/10"
         />
         <StatCard
           title="Subcampeón"
           icon={Medal}
           stats={subchampionStats}
           color="text-gray-300"
+          gradient="bg-gradient-to-br from-gray-400/20 to-gray-500/10"
         />
         <StatCard
           title="Tercer Puesto"
           icon={Award}
           stats={thirdPlaceStats}
           color="text-orange-400"
+          gradient="bg-gradient-to-br from-orange-500/20 to-orange-600/10"
         />
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-        <p className="text-gray-400 text-xs text-center">
-          Total de participantes con predicciones: <span className="text-white font-bold">{participants.filter(p => p.champion).length}</span>
-        </p>
+      <div className="bg-gradient-to-r from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-5">
+        <div className="flex items-center justify-center gap-3">
+          <BarChart3 size={20} className="text-orange-400" />
+          <p className="text-gray-400 text-sm">
+            Total de participantes con predicciones: <span className="text-white font-bold text-lg">{participants.filter(p => p.champion).length}</span>
+          </p>
+        </div>
       </div>
     </div>
   );
