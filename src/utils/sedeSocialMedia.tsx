@@ -110,21 +110,14 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/sancristobalvipizaguirre",
+        url: "https://www.facebook.com/people/Escuela-San-Cristobal-Izaguirre/61581820865189/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/sancristobalvipizaguirre",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
-      },
-      {
         name: "TikTok",
-        url: "https://tiktok.com/@sancristobalvipizaguirre",
+        url: "https://www.tiktok.com/@san.cristobal.iza",
         iconType: "tiktok",
         bgColor: "bg-black",
         hoverColor: "hover:bg-zinc-800"
@@ -136,22 +129,15 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/sancristobalvipcallao",
+        url: "https://www.facebook.com/people/San-Cristobal/61588533284685/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/sancristobalvipcallao",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
-      },
-      {
-        name: "Twitter",
-        url: "https://twitter.com/sancristobalvipcallao",
-        iconType: "twitter",
+        name: "TikTok",
+        url: "https://www.tiktok.com/@sancristobalvip7",
+        iconType: "tiktok",
         bgColor: "bg-black",
         hoverColor: "hover:bg-zinc-800"
       }
@@ -162,17 +148,17 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/sancristobalviphuacho",
+        url: "https://www.facebook.com/people/San-Cristobal-VIP-Huacho/61559091434560/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/sancristobalviphuacho",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
+        name: "TikTok",
+        url: "https://www.tiktok.com/@sancristobalvip_huacho7",
+        iconType: "tiktok",
+        bgColor: "bg-black",
+        hoverColor: "hover:bg-zinc-800"
       }
     ]
   },
@@ -207,40 +193,33 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/mibreveteate",
+        url: "https://www.facebook.com/people/Mi-Brevete-Seguro-Ate/61586863258945/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/mibreveteate",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
+        name: "TikTok",
+        url: "https://www.tiktok.com/@mi.brevete.seguro1",
+        iconType: "tiktok",
+        bgColor: "bg-black",
+        hoverColor: "hover:bg-zinc-800"
       }
     ]
   },
   {
-    sede: "MI BREVETE SEGURO AYACUCHO",
+    sede: "SAN CRISTOBAL VIP AYACUCHO",
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/mibreveteayacucho",
+        url: "https://www.facebook.com/people/San-Cristobal-Vip-Ayacucho/100077315710754/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/mibreveteayacucho",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
-      },
-      {
         name: "TikTok",
-        url: "https://tiktok.com/@mibreveteayacucho",
+        url: "https://www.tiktok.com/@sancristobalvipayacucho",
         iconType: "tiktok",
         bgColor: "bg-black",
         hoverColor: "hover:bg-zinc-800"
@@ -252,22 +231,15 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/sancristobaldelperuica",
+        url: "https://www.facebook.com/people/Escuela-de-Conductores-San-Crist%C3%B3bal-del-Per%C3%BA-Ica/100070900473823/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/sancristobaldelperuica",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
-      },
-      {
-        name: "Twitter",
-        url: "https://twitter.com/sancristobaldelperuica",
-        iconType: "twitter",
+        name: "TikTok",
+        url: "https://www.tiktok.com/@sancristobal.ica",
+        iconType: "tiktok",
         bgColor: "bg-black",
         hoverColor: "hover:bg-zinc-800"
       }
@@ -278,17 +250,10 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/sancristobaldelperuandahuaylas",
+        url: "https://www.facebook.com/people/San-Crist%C3%B3bal-Del-Per%C3%BA-Andahuaylas/61557770627991/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
-      },
-      {
-        name: "Instagram",
-        url: "https://instagram.com/sancristobaldelperuandahuaylas",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
       }
     ]
   },
@@ -453,21 +418,14 @@ export const SEDES_SOCIAL_MEDIA: SedeSocialMedia[] = [
     socialMedia: [
       {
         name: "Facebook",
-        url: "https://facebook.com/rtvhuancavelica",
+        url: "https://www.facebook.com/people/Mi-Brevete-Seguro-Sede-Huacavelica/pfbid02dtz5EaLkag98vXPVEcQx1EC6HuWDfkUd793WFi7mvDMLZcvZgLPiMA2SERxbTC7Gl/#",
         iconType: "facebook",
         bgColor: "bg-blue-600",
         hoverColor: "hover:bg-blue-700"
       },
       {
-        name: "Instagram",
-        url: "https://instagram.com/rtvhuancavelica",
-        iconType: "instagram",
-        bgColor: "bg-gradient-to-br from-purple-600 to-pink-500",
-        hoverColor: "hover:from-purple-700 hover:to-pink-600"
-      },
-      {
         name: "TikTok",
-        url: "https://tiktok.com/@rtvhuancavelica",
+        url: "https://www.tiktok.com/@mi.brevete.seguro",
         iconType: "tiktok",
         bgColor: "bg-black",
         hoverColor: "hover:bg-zinc-800"
