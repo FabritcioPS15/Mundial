@@ -3,7 +3,6 @@ import { User, CreditCard, Phone, Car } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTeamFlagUrl } from '../utils/flagHelper';
 import { getSocialMediaBySede, getIconComponent } from '../utils/sedeSocialMedia';
-import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 import { FaCar, FaDownload, FaPlus, FaShieldAlt, FaTrophy, FaCalendarAlt, FaHospital } from 'react-icons/fa';
 import { FaStar } from "react-icons/fa6";
@@ -201,7 +200,6 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
 
     return errs;
   };
-  const ticketCode = generateTicketCode();
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const errs = validate();
@@ -217,7 +215,8 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
     const cleanPlaca = form.placa.trim().toUpperCase();
 
     try {
-      const ok = await registerParticipant({
+      // registerParticipant returns the real ticketCode (string) or null on failure
+      const savedTicketCode = await registerParticipant({
         dni: form.dni.trim(),
         phone: form.phone.trim(),
         sede: form.sede,
@@ -225,16 +224,15 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
         champion: form.champion,
         subchampion: form.subchampion,
         thirdPlace: form.thirdPlace,
-        ticketCode,
       });
 
-      if (ok) {
+      if (savedTicketCode) {
         setLastRegistered({
           placa: cleanPlaca,
           champion: form.champion,
           subchampion: form.subchampion,
           thirdPlace: form.thirdPlace,
-          ticketCode,
+          ticketCode: savedTicketCode,
           sede: form.sede,
         });
         setSuccess(true);
@@ -256,31 +254,202 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
     }
   };
   const downloadTicket = async () => {
-    const ticketEl = document.getElementById('ticket-container');
-    if (!ticketEl) return;
+    if (!lastRegistered) return;
 
-    try {
-      const canvas = await html2canvas(ticketEl, {
-        scale: 3,
-        backgroundColor: '#1c1b1e',
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        onclone: (_, el) => {
-          el.style.borderRadius = '20px';
-          el.style.overflow = 'hidden';
-        },
-      });
+    const W = 480, H = 320;
+    const canvas = document.createElement('canvas');
+    canvas.width = W * 2;  // retina
+    canvas.height = H * 2;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(2, 2);
 
-      canvas.toBlob((blob) => {
-        if (blob) saveAs(blob, `ticket_mundial2026_${lastRegistered?.placa}.png`);
-      }, 'image/png');
+    const r = (hex: string) => parseInt(hex.slice(1, 3), 16);
+    const g = (hex: string) => parseInt(hex.slice(3, 5), 16);
+    const b = (hex: string) => parseInt(hex.slice(5, 7), 16);
 
-    } catch (e) {
-      console.error('Error al generar ticket', e);
-      showToast('Error al generar el ticket', 'error');
+    // ── Background ──────────────────────────────────────────
+    ctx.fillStyle = '#0A0A0A';
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, 16);
+    ctx.fill();
+
+    // ── Header gradient bar ──────────────────────────────────
+    const hdrH = 100;
+    const hdrGrad = ctx.createLinearGradient(0, 0, W, hdrH);
+    hdrGrad.addColorStop(0, '#1a0a00');
+    hdrGrad.addColorStop(1, '#0A0A0A');
+    ctx.fillStyle = hdrGrad;
+    ctx.fillRect(0, 0, W, hdrH);
+
+    // Orange top border
+    ctx.fillStyle = '#f97316';
+    ctx.fillRect(0, 0, W, 3);
+
+    // ── "PRONÓSTICO OFICIAL" label ───────────────────────────
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = '#f97316';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('PRONÓSTICO OFICIAL', W / 2, 22);
+
+    // ── "MUNDIAL 2026" title ─────────────────────────────────
+    ctx.font = 'bold 28px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('MUNDIAL 2026', W / 2, 54);
+
+    // ── Ticket code box ──────────────────────────────────────
+    const boxX = 24, boxY = 60, boxW = W - 48, boxH = 30;
+    ctx.strokeStyle = 'rgba(249,115,22,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+    ctx.stroke();
+
+    ctx.font = 'bold 7px monospace';
+    ctx.fillStyle = '#f97316';
+    ctx.fillText('CÓDIGO OFICIAL', W / 2, boxY + 10);
+
+    ctx.font = 'bold 14px monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.letterSpacing = '2px';
+    ctx.fillText(lastRegistered.ticketCode, W / 2, boxY + 24);
+    ctx.letterSpacing = '0px';
+
+    // ── Dashed separator ────────────────────────────────────
+    const sepY = hdrH + 12;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(20, sepY);
+    ctx.lineTo(W - 20, sepY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Notch circles
+    ctx.fillStyle = '#0A0A0A';
+    ctx.beginPath(); ctx.arc(0, sepY, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(W, sepY, 12, 0, Math.PI * 2); ctx.fill();
+
+    // ── "PODIO PRONOSTICADO" label ───────────────────────────
+    const bodyY = sepY + 16;
+    ctx.font = 'bold 8px Arial';
+    ctx.fillStyle = '#f97316';
+    ctx.textAlign = 'left';
+    ctx.fillText('🏆  PODIO PRONOSTICADO', 24, bodyY);
+
+    // ── Prediction rows ──────────────────────────────────────
+    const medals = ['🥇', '🥈', '🥉'];
+    const labels = ['Campeón', 'Subcampeón', 'Tercer puesto'];
+    const values = [lastRegistered.champion, lastRegistered.subchampion, lastRegistered.thirdPlace];
+    const rowH = 28;
+
+    for (let i = 0; i < 3; i++) {
+      const ry = bodyY + 10 + i * rowH;
+
+      // Row divider
+      if (i > 0) {
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(24, ry - 4);
+        ctx.lineTo(W - 24, ry - 4);
+        ctx.stroke();
+      }
+
+      // Medal emoji
+      ctx.font = '16px serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(medals[i], 24, ry + 12);
+
+      // Label
+      ctx.font = '11px Arial';
+      ctx.fillStyle = '#888888';
+      ctx.fillText(labels[i], 52, ry + 12);
+
+      // Vertical separator
+      ctx.fillStyle = '#333';
+      ctx.fillRect(148, ry + 2, 1, 16);
+
+      // Country name
+      ctx.font = 'bold 13px Arial';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(values[i] || '—', 158, ry + 13);
     }
+
+    // ── Footer bar ───────────────────────────────────────────
+    const footerY = H - 56;
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(0, footerY); ctx.lineTo(W, footerY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#0F0F0F';
+    ctx.fillRect(0, footerY, W, 26);
+
+    // Date
+    const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+    ctx.font = 'bold 8px Arial';
+    ctx.fillStyle = '#f97316';
+    ctx.textAlign = 'left';
+    ctx.fillText('REGISTRADO', 24, footerY + 10);
+    ctx.font = 'bold 9px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(dateStr, 24, footerY + 21);
+
+    // Validated badge
+    ctx.font = 'bold 8px Arial';
+    ctx.fillStyle = '#f97316';
+    ctx.textAlign = 'center';
+    ctx.fillText('ESTADO', W / 2, footerY + 10);
+    ctx.font = 'bold 9px Arial';
+    ctx.fillStyle = '#22c55e';
+    ctx.fillText('✔ VALIDADO', W / 2, footerY + 21);
+
+    // Placa
+    ctx.font = 'bold 8px Arial';
+    ctx.fillStyle = '#f97316';
+    ctx.textAlign = 'right';
+    ctx.fillText('VEHÍCULO', W - 24, footerY + 10);
+    ctx.font = 'bold 11px monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(lastRegistered.placa, W - 24, footerY + 21);
+
+    // ── Bottom orange strip ──────────────────────────────────
+    const stripY = H - 30;
+    const grad = ctx.createLinearGradient(0, stripY, W, stripY);
+    grad.addColorStop(0, '#ea580c');
+    grad.addColorStop(1, '#f97316');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, stripY, W, 30);
+
+    ctx.font = 'bold 8px Arial';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'left';
+    ctx.fillText('VÁLIDO PARA EL EVENTO REALIZADO', 40, stripY + 13);
+    ctx.font = '7px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('PRESENTA ESTE TICKET PARA SU VALIDACIÓN', 40, stripY + 23);
+
+    // Stars
+    ctx.font = '10px serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.textAlign = 'right';
+    ctx.fillText('★ ★ ★ ★ ★', W - 16, stripY + 18);
+
+    // ── Outer border ─────────────────────────────────────────
+    ctx.strokeStyle = 'rgba(249,115,22,0.3)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(1, 1, W - 2, H - 2, 15);
+    ctx.stroke();
+
+    // ── Download ─────────────────────────────────────────────
+    canvas.toBlob((blob) => {
+      if (blob) saveAs(blob, `ticket_mundial2026_${lastRegistered!.placa}.png`);
+    }, 'image/png');
   };
+
 
   return (
     <div ref={ref} className="w-full max-w-full lg:max-w-xl mx-auto relative">

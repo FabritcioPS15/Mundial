@@ -11,6 +11,7 @@ import {
   deleteParticipant,
   importParticipantsFromExcel,
 } from '../utils/supabaseStorage';
+import { buildTicketCode } from '../utils/excelImport';
 
 interface Toast {
   id: string;
@@ -32,7 +33,7 @@ interface AppContextType {
       thirdPlace: string;
       sede?: string;
     }
-  ) => Promise<boolean>;
+  ) => Promise<string | null>; // returns ticketCode on success, null on failure
   removeParticipant: (id: string) => Promise<void>;
   importParticipants: (data: Array<{
     DNI: string;
@@ -103,14 +104,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const registerParticipant = useCallback(
-    async (data: Omit<Participant, 'id' | 'registeredAt'> & { champion: string; subchampion: string; thirdPlace: string; }) => {
+    async (data: Omit<Participant, 'id' | 'registeredAt'> & { champion: string; subchampion: string; thirdPlace: string; }): Promise<string | null> => {
       // Check for duplicate DNI
       const existing = await fetchParticipants();
       if (existing.some((p) => p.dni.toLowerCase() === data.dni.toLowerCase())) {
         showToast('Este DNI ya está registrado', 'error');
-        return false;
+        return null;
       }
-      const ticketCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Ticket: GSC-PLACA + sequential (continues global counter)
+      const ticketCode = buildTicketCode(data.placa, existing.length + 1);
       // Insert participant core data
       await insertParticipant({
         dni: data.dni,
@@ -124,7 +126,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const participant = participantsNow.find((p) => p.dni === data.dni);
       if (!participant) {
         showToast('Error al crear participante', 'error');
-        return false;
+        return null;
       }
       // Insert predictions linked to participant
       await insertPrediction({
@@ -136,7 +138,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Refresh participant list
       setParticipants(await fetchParticipants());
       showToast('Registro exitoso! Ya eres parte del sorteo', 'success');
-      return true;
+      return ticketCode; // ← real ticket code, same as what's in DB
     },
     [showToast]
   );
@@ -163,18 +165,54 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }>) => {
     try {
       const result = await importParticipantsFromExcel(data);
+
+      // Show success toast
       if (result.success > 0) {
         setParticipants(await fetchParticipants());
-        showToast(`${result.success} participantes importados exitosamente`, 'success');
+        showToast(`✅ ${result.success} participante${result.success !== 1 ? 's' : ''} importado${result.success !== 1 ? 's' : ''} exitosamente`, 'success');
       }
+
       if (result.errors.length > 0) {
-        result.errors.forEach(err => console.error(err));
-        showToast(`${result.errors.length} errores durante la importación`, 'error');
+        // Separate duplicate-DNI errors from other errors
+        const duplicateErrors = result.errors.filter(e => e.includes('ya existe'));
+        const otherErrors = result.errors.filter(e => !e.includes('ya existe'));
+
+        // Notify duplicate DNIs
+        if (duplicateErrors.length > 0) {
+          const THRESHOLD = 3;
+          if (duplicateErrors.length <= THRESHOLD) {
+            // Show each skipped DNI individually
+            duplicateErrors.forEach(errMsg => {
+              // Extract DNI from message like "DNI 40664545 ya existe"
+              const match = errMsg.match(/DNI\s+(\S+)/i);
+              const dni = match ? match[1] : errMsg;
+              showToast(`⚠️ DNI ${dni} ya estaba registrado — omitido`, 'error');
+            });
+          } else {
+            // Summary for large batches
+            showToast(
+              `⚠️ Se omitieron ${duplicateErrors.length} registros porque sus DNIs ya existen en el sistema`,
+              'error'
+            );
+          }
+        }
+
+        // Notify other errors (non-duplicate)
+        if (otherErrors.length > 0) {
+          showToast(`❌ ${otherErrors.length} error${otherErrors.length !== 1 ? 'es' : ''} adicional${otherErrors.length !== 1 ? 'es' : ''} durante la importación`, 'error');
+          otherErrors.forEach(e => console.error('[Import error]', e));
+        }
       }
+
+      // Edge case: nothing was imported at all
+      if (result.success === 0 && result.errors.length === 0) {
+        showToast('El archivo no contiene registros válidos para importar', 'info');
+      }
+
       return result;
     } catch (err) {
       console.error('Error importing participants', err);
-      showToast('Error al importar participantes', 'error');
+      showToast('❌ Error al importar participantes. Revisa el archivo.', 'error');
       return { success: 0, errors: ['Error general al importar'] };
     }
   }, [showToast]);

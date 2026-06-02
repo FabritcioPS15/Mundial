@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, Trash2, Users, Download, Upload, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Search, Trash2, Users, Download, Upload, ChevronLeft, ChevronRight, Filter, FileDown } from 'lucide-react';
+import ExcelJS from 'exceljs';
 import { useApp } from '../context/AppContext';
 import { exportToExcel } from '../utils/storage';
 import { getTeamFlagUrl } from '../utils/flagHelper';
@@ -65,6 +66,56 @@ export default function ParticipantsTable() {
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Participantes');
+
+    // Define columns (headers)
+    ws.columns = [
+      { header: 'DNI',          key: 'DNI',          width: 16 },
+      { header: 'Telefono',     key: 'Telefono',     width: 16 },
+      { header: 'Placa',        key: 'Placa',        width: 12 },
+      { header: 'Sede',         key: 'Sede',         width: 38 },
+      { header: 'Campeon',      key: 'Campeon',      width: 20 },
+      { header: 'Subcampeon',   key: 'Subcampeon',   width: 20 },
+      { header: 'TercerPuesto', key: 'TercerPuesto', width: 20 },
+    ];
+
+    // Style the header row
+    const headerRow = ws.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEA580C' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } },
+      };
+    });
+    headerRow.height = 22;
+
+    // Add one example row
+    ws.addRow({
+      DNI: '12345678',
+      Telefono: '987654321',
+      Placa: 'ABC123',
+      Sede: 'RTP San Cristóbal Callao',
+      Campeon: 'Argentina',
+      Subcampeon: 'Brasil',
+      TercerPuesto: 'Francia',
+    });
+
+    // Generate and download
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plantilla_mundial2026.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 Plantilla descargada correctamente', 'success');
+  };
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -72,18 +123,11 @@ export default function ParticipantsTable() {
     setImporting(true);
     try {
       const data = await readExcelFile(file);
-      const result = await importParticipants(data);
-      
-      if (result.success > 0) {
-        showToast(`${result.success} participantes importados correctamente`, 'success');
-      }
-      if (result.errors.length > 0) {
-        console.error('Import errors:', result.errors);
-        showToast(`${result.errors.length} errores durante la importación. Revisa la consola.`, 'error');
-      }
+      // AppContext handles all success/error toasts for import
+      await importParticipants(data);
     } catch (error) {
       console.error('Error importing file:', error);
-      showToast('Error al procesar el archivo Excel', 'error');
+      showToast('❌ Error al procesar el archivo Excel', 'error');
     } finally {
       setImporting(false);
       e.target.value = '';
@@ -138,6 +182,16 @@ export default function ParticipantsTable() {
             className="hidden"
             id="excel-import"
           />
+          {/* Download Template */}
+          <button
+            onClick={handleDownloadTemplate}
+            title="Descargar plantilla Excel"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-orange-500/40 text-gray-300 hover:text-orange-400 px-4 py-3 rounded-xl text-sm font-semibold transition-all"
+          >
+            <FileDown size={16} />
+            Plantilla
+          </button>
+          {/* Import Excel */}
           <button
             onClick={() => document.getElementById('excel-import')?.click()}
             disabled={importing}

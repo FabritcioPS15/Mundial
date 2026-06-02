@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import type { Participant, Winner, BracketData } from '../types';
-import { generateTicketCode } from './excelImport';
+import { buildTicketCode } from './excelImport';
 
 // ---------- Participants ----------
 export async function fetchParticipants(): Promise<Participant[]> {
@@ -83,9 +83,11 @@ export async function importParticipantsFromExcel(
   const errors: string[] = [];
   let successCount = 0;
 
-  // Check for existing DNIs
+  // Fetch existing participants for duplicate check and sequential counter base
   const existing = await fetchParticipants();
   const existingDnis = new Set(existing.map(p => p.dni.toLowerCase()));
+  // Global sequence starts after all current participants
+  let globalSeq = existing.length + 1;
 
   for (const row of data) {
     try {
@@ -95,20 +97,25 @@ export async function importParticipantsFromExcel(
         continue;
       }
 
-      const ticketCode = generateTicketCode();
+      // Build structured ticket code: GSC + PLACA + sequential (e.g. GSCABC123001)
+      const ticketCode = buildTicketCode(row.Placa, globalSeq);
 
-      // Insert participant
-      const { error: partError } = await supabase.from('participants').insert({
-        dni: row.DNI,
-        phone: row.Telefono,
-        placa: row.Placa,
-        sede: row.Sede || null,
-        ticket_code: ticketCode,
-      }).select('id').single();
+      // Insert participant and retrieve its new ID
+      const { data: partData, error: partError } = await supabase
+        .from('participants')
+        .insert({
+          dni: row.DNI,
+          phone: row.Telefono,
+          placa: row.Placa,
+          sede: row.Sede || null,
+          ticket_code: ticketCode,
+        })
+        .select('id')
+        .single();
 
       if (partError) throw partError;
 
-      const participantId = (partError as any)?.data?.id;
+      const participantId = partData?.id;
       if (!participantId) {
         errors.push(`No se pudo obtener ID para DNI ${row.DNI}`);
         continue;
@@ -129,6 +136,7 @@ export async function importParticipantsFromExcel(
       }
 
       successCount++;
+      globalSeq++;   // advance sequential for next ticket
     } catch (error: any) {
       errors.push(`Error con DNI ${row.DNI}: ${error.message}`);
     }

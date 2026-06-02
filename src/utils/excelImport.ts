@@ -42,14 +42,20 @@ export async function readExcelFile(file: File): Promise<ImportParticipant[]> {
 
     // Map Excel columns to ImportParticipant interface
     const participant: ImportParticipant = {
-      DNI: rowData['DNI'] || rowData['dni'] || '',
-      Telefono: rowData['Telefono'] || rowData['telefono'] || rowData['Teléfono'] || '',
-      Placa: rowData['Placa'] || rowData['placa'] || '',
-      Sede: rowData['Sede'] || rowData['sede'] || undefined,
-      Campeon: rowData['Campeon'] || rowData['campeon'] || rowData['Campeón'] || undefined,
-      Subcampeon: rowData['Subcampeon'] || rowData['subcampeon'] || rowData['Subcampeón'] || undefined,
+      DNI:          String(rowData['DNI']          || rowData['dni']          || '').trim(),
+      Telefono:     String(rowData['Telefono']     || rowData['telefono']     || rowData['Teléfono']     || '').trim(),
+      Placa:        String(rowData['Placa']        || rowData['placa']        || '').trim().toUpperCase(),
+      Sede:         rowData['Sede']         || rowData['sede']         || undefined,
+      Campeon:      rowData['Campeon']      || rowData['campeon']      || rowData['Campeón']      || undefined,
+      Subcampeon:   rowData['Subcampeon']   || rowData['subcampeon']   || rowData['Subcampeón']   || undefined,
       TercerPuesto: rowData['TercerPuesto'] || rowData['tercerPuesto'] || rowData['Tercer Puesto'] || undefined,
     };
+
+    // Convert optional string fields too
+    if (participant.Sede)         participant.Sede         = String(participant.Sede).trim();
+    if (participant.Campeon)      participant.Campeon      = String(participant.Campeon).trim();
+    if (participant.Subcampeon)   participant.Subcampeon   = String(participant.Subcampeon).trim();
+    if (participant.TercerPuesto) participant.TercerPuesto = String(participant.TercerPuesto).trim();
 
     if (participant.DNI && participant.Telefono && participant.Placa) {
       data.push(participant);
@@ -61,13 +67,20 @@ export async function readExcelFile(file: File): Promise<ImportParticipant[]> {
   return data;
 }
 
+/**
+ * Builds a structured ticket code: GSC + placa + zero-padded sequential number.
+ * Example: buildTicketCode('ABC123', 7) → 'GSCABC123007'
+ */
+export function buildTicketCode(placa: string, sequentialNumber: number): string {
+  const seq = String(sequentialNumber).padStart(3, '0');
+  return `GSC-${placa.trim().toUpperCase()}${seq}`;
+}
+
+/** @deprecated Use buildTicketCode instead */
 export function generateTicketCode(): string {
+  // Kept for backward compatibility — prefer buildTicketCode(placa, seq)
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = 'RTP-2026-';
-
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
+  let result = 'GSC-';
+  for (let i = 0; i < 6; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
   return result;
 }
