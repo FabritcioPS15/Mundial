@@ -301,9 +301,9 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
 
         {success && lastRegistered ? (
           <div className="text-center py-4 animate-scale-in relative z-10">
-            <h3 className="font-teko text-3xl sm:text-4xl text-orange-500 mb-2 uppercase tracking-wide">¡REGISTRO CONFIRMADO!</h3>
-            {/* TICKET WRAPPER */}
-            <div className="w-full overflow-x-auto pb-4 flex justify-start sm:justify-center" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+            <h3 className="font-teko text-3xl sm:text-4xl text-orange-500 mb-4 uppercase tracking-wide">¡REGISTRO CONFIRMADO!</h3>
+            {/* TICKET WRAPPER - Hidden visually but kept in DOM for download */}
+            <div className="hidden" style={{ display: 'none' }}>
               <div
                 id="ticket-container"
                 style={{

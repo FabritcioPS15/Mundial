@@ -24,21 +24,23 @@ export default function Hero({ formRef }: HeroProps) {
       <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white via-white/20 to-transparent pointer-events-none z-10" />
 
       {/* Main Grid Content */}
-      <div className="relative z-20 w-full mx-auto flex flex-col items-center pt-2 px-2">
+      <div className="relative z-20 w-full max-w-7xl mx-auto pt-2 px-2">
 
-        {/* Header titles in Teko premium sports font - Slanted & Italic */}
-        <div className="text-center space-y-0 select-none mb-6 md:mb-8">
-          <h1 className="font-teko text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white uppercase tracking-wide leading-[0.85] italic font-black drop-shadow-[0_4px_15px_rgba(255,255,255,0.15)] animate-slide-in">
-            GRAN SORTEO
-          </h1>
-          <h2 className="font-teko text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-[#f97316] uppercase tracking-wide leading-[0.85] italic font-black drop-shadow-[0_4px_30px_rgba(249,115,22,0.5)]">
-            MUNDIAL 2026
-          </h2>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          {/* Left: Header titles in Teko premium sports font - Slanted & Italic */}
+          <div className="text-center lg:text-left select-none order-1 lg:order-1 space-y-2">
+            <h1 className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-white uppercase tracking-wider leading-[0.8] italic font-black drop-shadow-[0_6px_20px_rgba(255,255,255,0.2)] animate-slide-in">
+              GRAN SORTEO
+            </h1>
+            <h2 className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-[#f97316] uppercase tracking-wider leading-[0.8] italic font-black drop-shadow-[0_6px_35px_rgba(249,115,22,0.6)]">
+              MUNDIAL 2026
+            </h2>
+          </div>
 
-        {/* Registration Card */}
-        <div className="w-full flex items-center justify-center animate-scale-in">
-          <RegisterForm ref={formRef} />
+          {/* Right: Registration Card */}
+          <div className="w-full flex items-center justify-center lg:justify-end animate-scale-in order-2 lg:order-2">
+            <RegisterForm ref={formRef} />
+          </div>
         </div>
 
       </div>
