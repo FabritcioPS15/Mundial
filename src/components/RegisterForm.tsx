@@ -678,68 +678,31 @@ const RegisterForm = forwardRef<HTMLDivElement>((_, ref) => {
                 <p className="text-orange-400 text-xs font-bold mb-1">⚠️ IMPORTANTE</p>
                 <p className="text-white text-xs sm:text-sm">Si aciertas las predicciones, confirmaremos que sigues nuestras redes sociales para hacerte acreedor del premio</p>
               </div>
-              <div className="bg-white/5 rounded-xl p-3 sm:p-4">
-                <p className="text-zinc-300 text-xs mb-2 sm:mb-3 font-medium">Síguenos en nuestras redes sociales</p>
-                <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
-                  {(() => {
-                    const sedeName = lastRegistered?.sede || '';
-                    console.log('Sede registrada:', sedeName);
-                    const socialMedia = getSocialMediaBySede(sedeName);
-                    console.log('Redes sociales encontradas:', socialMedia);
-                    if (socialMedia.length === 0) {
-                      // Redes sociales por defecto si no hay configuración para la sede
-                      return (
-                        <>
-                          <a
-                            href="https://facebook.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors text-white"
-                          >
-                            {getIconComponent('facebook')}
-                          </a>
-                          <a
-                            href="https://instagram.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 rounded-full flex items-center justify-center transition-colors text-white"
-                          >
-                            {getIconComponent('instagram')}
-                          </a>
-                          <a
-                            href="https://twitter.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-12 h-12 bg-black hover:bg-zinc-800 border border-white/20 rounded-full flex items-center justify-center transition-colors text-white"
-                          >
-                            {getIconComponent('twitter')}
-                          </a>
-                          <a
-                            href="https://tiktok.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-12 h-12 bg-black hover:bg-zinc-800 rounded-full flex items-center justify-center transition-colors text-white"
-                          >
-                            {getIconComponent('tiktok')}
-                          </a>
-                        </>
-                      );
-                    }
-                    // Mostrar redes sociales específicas de la sede
-                    return socialMedia.map((social) => (
-                      <a
-                        key={social.name}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`w-12 h-12 ${social.bgColor} ${social.hoverColor} rounded-full flex items-center justify-center transition-colors text-white`}
-                      >
-                        {getIconComponent(social.iconType)}
-                      </a>
-                    ));
-                  })()}
-                </div>
-              </div>
+              {(() => {
+                const sedeName = lastRegistered?.sede || '';
+                const socialMedia = getSocialMediaBySede(sedeName).filter(social => social.url && social.url.trim() !== "");
+                
+                if (socialMedia.length === 0) return null;
+
+                return (
+                  <div className="bg-white/5 rounded-xl p-3 sm:p-4">
+                    <p className="text-zinc-300 text-xs mb-2 sm:mb-3 font-medium">Síguenos en nuestras redes sociales</p>
+                    <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
+                      {socialMedia.map((social) => (
+                        <a
+                          key={social.name}
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`w-12 h-12 ${social.bgColor} ${social.hoverColor} rounded-full flex items-center justify-center transition-colors text-white`}
+                        >
+                          {getIconComponent(social.iconType)}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         ) : (
