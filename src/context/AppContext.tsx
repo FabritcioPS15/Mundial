@@ -105,42 +105,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const registerParticipant = useCallback(
     async (data: Omit<Participant, 'id' | 'registeredAt'> & { champion: string; subchampion: string; thirdPlace: string; }): Promise<string | null> => {
-      // Check for duplicate DNI
-      const existing = await fetchParticipants();
-      if (existing.some((p) => p.dni.toLowerCase() === data.dni.toLowerCase())) {
+      // Check for duplicate DNI and Placa using local state to avoid DB reads
+      if (participants.some((p) => p.dni.toLowerCase() === data.dni.toLowerCase())) {
         showToast('Este DNI ya está registrado', 'error');
         return null;
       }
+      if (participants.some((p) => p.placa.toUpperCase() === data.placa.toUpperCase())) {
+        showToast('Esta placa ya está registrada', 'error');
+        return null;
+      }
+      
       // Ticket: GSC-PLACA + sequential (continues global counter)
-      const ticketCode = buildTicketCode(data.placa, existing.length + 1);
-      // Insert participant core data
-      await insertParticipant({
+      const ticketCode = buildTicketCode(data.placa, participants.length + 1);
+      
+      // Insert participant core data and get the new ID
+      const participantId = await insertParticipant({
         dni: data.dni,
         phone: data.phone,
         placa: data.placa,
         sede: data.sede,
         ticketCode: ticketCode,
       });
-      // Retrieve the newly created participant to get its ID
-      const participantsNow = await fetchParticipants();
-      const participant = participantsNow.find((p) => p.dni === data.dni);
-      if (!participant) {
-        showToast('Error al crear participante', 'error');
-        return null;
-      }
+
       // Insert predictions linked to participant
       await insertPrediction({
-        participantId: participant.id,
+        participantId: participantId,
         champion: data.champion,
         subchampion: data.subchampion,
         thirdPlace: data.thirdPlace,
       });
-      // Refresh participant list
+
+      // Refresh participant list once at the end
       setParticipants(await fetchParticipants());
       showToast('Registro exitoso! Ya eres parte del sorteo', 'success');
       return ticketCode; // ← real ticket code, same as what's in DB
     },
-    [showToast]
+    [participants, showToast]
   );
 
   const removeParticipant = useCallback(async (id: string) => {

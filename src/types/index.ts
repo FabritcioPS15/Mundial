@@ -1,5 +1,6 @@
 export interface Participant {
   id: string;
+  name?: string;
   dni: string;
   phone: string;
   placa: string;

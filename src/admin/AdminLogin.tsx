@@ -136,15 +136,7 @@ export default function AdminLogin({ onLogin }: Props) {
             )}
           </button>
 
-          {/* Credentials Hint */}
-          <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
-            <p className="text-gray-400 text-xs text-center">
-              Credenciales de prueba:
-            </p>
-            <p className="text-gray-300 text-sm text-center mt-1 font-mono">
-              <span className="text-orange-400">admin</span> / <span className="text-orange-400">mundial2026</span>
-            </p>
-          </div>
+
         </form>
 
         {/* Back Link */}

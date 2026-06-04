@@ -44,18 +44,17 @@ export default function WinnerModal({ winner, onClose }: Props) {
           <div className="bg-white/5 border border-gold/30 rounded-2xl p-6 mb-6">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-zinc-800 to-black border-2 border-gold flex items-center justify-center mx-auto mb-4">
               <span className="text-gold font-black text-2xl">
-                {winner.participant.fullName.charAt(0).toUpperCase()}
+                {(winner.participant.name || winner.participant.dni).charAt(0).toUpperCase()}
               </span>
             </div>
-            <h3 className="text-2xl font-black text-white mb-1">{winner.participant.fullName}</h3>
+            <h3 className="text-2xl font-black text-white mb-1">{winner.participant.name || winner.participant.dni}</h3>
             <div className="my-3">
               <span className="bg-orange-500/10 text-orange-400 border border-orange-500/30 px-3 py-1 rounded font-mono font-bold text-xs uppercase">
                 🚗 {winner.participant.placa || 'N/A'}
               </span>
             </div>
-            <p className="text-gray-400 text-sm mb-1">{winner.participant.email}</p>
             <p className="text-gray-500 text-xs">DNI: {winner.participant.dni}</p>
-            
+
             <div className="border-t border-white/5 mt-4 pt-4">
               <span className="text-[9px] text-gray-500 uppercase tracking-widest block font-bold mb-2">Predicción del Podio</span>
               <div className="grid grid-cols-3 gap-2 text-center text-[10px]">

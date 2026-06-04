@@ -7,9 +7,7 @@ export default function ReportsSection() {
 
   const exportParticipants = async () => {
     const data = participants.map((p) => ({
-      Nombre: p.fullName,
       DNI: p.dni,
-      Email: p.email,
       Telefono: p.phone,
       Placa: p.placa || 'N/A',
       Campeon: p.champion || 'N/A',
@@ -29,9 +27,7 @@ export default function ReportsSection() {
   const exportWinners = async () => {
     const data = winners.map((w) => ({
       'N° Sorteo': w.drawNumber,
-      Ganador: w.participant.fullName,
       DNI: w.participant.dni,
-      Email: w.participant.email,
       Telefono: w.participant.phone,
       'Fecha del sorteo': new Date(w.drawnAt).toLocaleString('es-ES'),
     }));

@@ -48,15 +48,17 @@ export async function insertParticipant(p: {
   placa: string;
   sede?: string;
   ticketCode?: string;
-}): Promise<void> {
-  const { error } = await supabase.from('participants').insert({
+}): Promise<string> {
+  const { data, error } = await supabase.from('participants').insert({
     dni: p.dni,
     phone: p.phone,
     placa: p.placa,
     sede: p.sede,
     ticket_code: p.ticketCode,
-  });
+  }).select('id').single();
+  
   if (error) throw error;
+  return data.id;
 }
 
 export async function deleteParticipant(id: string): Promise<void> {
@@ -86,6 +88,7 @@ export async function importParticipantsFromExcel(
   // Fetch existing participants for duplicate check and sequential counter base
   const existing = await fetchParticipants();
   const existingDnis = new Set(existing.map(p => p.dni.toLowerCase()));
+  const existingPlacas = new Set(existing.map(p => p.placa.toUpperCase()));
   // Global sequence starts after all current participants
   let globalSeq = existing.length + 1;
 
@@ -94,6 +97,12 @@ export async function importParticipantsFromExcel(
       // Check for duplicate DNI
       if (existingDnis.has(row.DNI.toLowerCase())) {
         errors.push(`DNI ${row.DNI} ya existe`);
+        continue;
+      }
+
+      // Check for duplicate Placa
+      if (row.Placa && existingPlacas.has(row.Placa.toUpperCase())) {
+        errors.push(`Placa ${row.Placa} ya existe`);
         continue;
       }
 

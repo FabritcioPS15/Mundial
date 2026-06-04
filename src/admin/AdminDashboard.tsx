@@ -45,9 +45,8 @@ export default function AdminDashboard({ onLogout }: Props) {
     <div className="min-h-screen bg-black flex flex-col md:flex-row">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-zinc-900 via-zinc-900 to-black border-r border-white/10 transform transition-transform duration-300 md:translate-x-0 ${
-          menuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-zinc-900 via-zinc-900 to-black border-r border-white/10 transform transition-transform duration-300 md:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
@@ -64,11 +63,10 @@ export default function AdminDashboard({ onLogout }: Props) {
             <button
               key={id}
               onClick={() => { setTab(id); setMenuOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                tab === id
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${tab === id
                   ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-black shadow-lg shadow-orange-500/20'
                   : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
+                }`}
             >
               <Icon size={17} />
               {label}
