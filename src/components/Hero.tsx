@@ -30,7 +30,7 @@ export default function Hero({ formRef }: HeroProps) {
           {/* Left: Header titles in Teko premium sports font - Slanted & Italic */}
           <div className="text-center lg:text-left select-none order-1 lg:order-1 space-y-2">
             <h1 className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-white uppercase tracking-wider leading-[0.8] italic font-black drop-shadow-[0_6px_20px_rgba(255,255,255,0.2)] animate-slide-in">
-              GRAN SORTEO
+              ACIERTA Y GANA
             </h1>
             <h2 className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] text-[#f97316] uppercase tracking-wider leading-[0.8] italic font-black drop-shadow-[0_6px_35px_rgba(249,115,22,0.6)]">
               MUNDIAL 2026
