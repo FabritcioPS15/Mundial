@@ -4,28 +4,71 @@ import { buildTicketCode } from './excelImport';
 
 // ---------- Participants ----------
 export async function fetchParticipants(): Promise<Participant[]> {
-  const { data: participantsData, error: participantsError } = await supabase.from('participants').select('*');
-  if (participantsError) throw participantsError;
+  let allParticipants: any[] = [];
+  let from = 0;
+  const step = 1000;
+  let fetchMore = true;
+
+  while (fetchMore) {
+    const { data: participantsData, error: participantsError } = await supabase
+      .from('participants')
+      .select('*')
+      .range(from, from + step - 1);
+      
+    if (participantsError) throw participantsError;
+
+    if (participantsData && participantsData.length > 0) {
+      allParticipants = allParticipants.concat(participantsData);
+      if (participantsData.length < step) {
+        fetchMore = false;
+      } else {
+        from += step;
+      }
+    } else {
+      fetchMore = false;
+    }
+  }
 
   // Fetch predictions – if the table is missing or RLS blocks it, still return participants
   let predMap = new Map<string, any>();
   try {
-    const { data: predictionsData, error: predictionsError } = await supabase.from('predictions').select('*');
-    if (predictionsError) {
-      console.warn('⚠️ [fetchParticipants] No se pudo leer predictions:', predictionsError.message);
-    } else {
-      console.log('✅ [fetchParticipants] Predictions cargadas:', predictionsData?.length ?? 0, 'filas');
-      (predictionsData as any[]).forEach(p => {
-        console.log('   → prediction row:', { participant_id: p.participant_id, champion: p.champion, subchampion: p.subchampion, third_place: p.third_place });
-        predMap.set(p.participant_id, p);
-      });
+    let allPredictions: any[] = [];
+    let pFrom = 0;
+    let pFetchMore = true;
+
+    while (pFetchMore) {
+      const { data: predictionsData, error: predictionsError } = await supabase
+        .from('predictions')
+        .select('*')
+        .range(pFrom, pFrom + step - 1);
+
+      if (predictionsError) {
+        console.warn('⚠️ [fetchParticipants] No se pudo leer predictions:', predictionsError.message);
+        pFetchMore = false;
+      } else {
+        if (predictionsData && predictionsData.length > 0) {
+          allPredictions = allPredictions.concat(predictionsData);
+          if (predictionsData.length < step) {
+            pFetchMore = false;
+          } else {
+            pFrom += step;
+          }
+        } else {
+          pFetchMore = false;
+        }
+      }
     }
+
+    console.log('✅ [fetchParticipants] Predictions cargadas:', allPredictions.length, 'filas');
+    allPredictions.forEach(p => {
+      predMap.set(p.participant_id, p);
+    });
   } catch (e) {
     console.warn('⚠️ [fetchParticipants] Error al cargar predictions:', e);
   }
 
   // Merge predictions into participant objects
-  return (participantsData as any[]).map(p => {
+  return allParticipants.map(p => {
     const pred = predMap.get(p.id);
     return {
       id: p.id,
